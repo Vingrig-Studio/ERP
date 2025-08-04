@@ -1,0 +1,16 @@
+{
+  "Aluminium": 0.435,
+  "ALUMINIUM": 0.435,
+  "Fibre-based composite": 0.455,
+  "Glass": 0.240,
+  "GLASS": 0.240,
+  "Paper or board": 0.215,
+  "PAPER_CARD": 0.215,
+  "Plastic": 0.485,
+  "LDPE_FILM": 0.485,
+  "plastic": 0.485,
+  "Steel": 0.305,
+  "Wood": 0.320,
+  "Other": 0.280,
+  "paper": 0.215
+} 

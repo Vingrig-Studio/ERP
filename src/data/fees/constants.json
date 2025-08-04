@@ -1,0 +1,7 @@
+{
+  "kg_divisor": 100,
+  "vat_rate": 0.1,
+  "tax_rate": 0.2,
+  "lambda": 1.0,
+  "cl": 1.0
+} 

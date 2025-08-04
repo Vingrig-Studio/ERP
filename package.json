@@ -1,0 +1,44 @@
+{
+  "name": "pascalite-uk-calculator",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "tunnel": "ngrok http 3000"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.2.0",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@shopify/app-bridge-react": "^3.7.6",
+    "@tailwindcss/forms": "^0.5.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "json2csv": "^5.0",
+    "jszip": "^3.10",
+    "lucide-react": "^0.263.1",
+    "next": "^14",
+    "papaparse": "^5.4",
+    "react": "^18",
+    "react-dom": "^18.3.1",
+    "react-dropzone": "^14.2.3",
+    "react-hook-form": "^7.52.1",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss": "^3.4.1",
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^3.22"
+  },
+  "devDependencies": {
+    "@types/json2csv": "^5.0.7",
+    "@types/node": "^20",
+    "@types/papaparse": "^5.3.16",
+    "@types/react": "^18",
+    "autoprefixer": "^10.4.21",
+    "ngrok": "^5.0.0-beta.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
+  }
+}
