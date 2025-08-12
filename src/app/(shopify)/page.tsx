@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dropzone } from '@/components/calculator/Dropzone';
 import { Loader2, Package, Info, Edit, Check } from 'lucide-react';
 import { parseCSV } from '@/lib/csv-handler';
-import { calculateFees, calculateRowFee, feesMap, validPackagingMaterials, validWEEEMaterials, validBatteryMaterials } from '@/lib/epr-calculator';
+import { calculateFees, calculateRowFee, feesMap, validPackagingMaterials, validWEEEMaterials, validBatteryMaterials, validatePackagingMaterial, STANDARD_PACKAGING_MATERIALS } from '@/lib/epr-calculator';
 import JSZip from 'jszip';
 import { Parser } from 'json2csv';
 import packagingFees from '@/data/fees/packaging.json';
@@ -37,38 +37,12 @@ function RatesInfo() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow>
-                <TableCell>Aluminium</TableCell>
-                <TableCell>435</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Fibre-based composite</TableCell>
-                <TableCell>455</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Glass</TableCell>
-                <TableCell>240</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Paper or board</TableCell>
-                <TableCell>215</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Plastic</TableCell>
-                <TableCell>485</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Steel</TableCell>
-                <TableCell>305</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Wood</TableCell>
-                <TableCell>320</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Other</TableCell>
-                <TableCell>280</TableCell>
-              </TableRow>
+              {STANDARD_PACKAGING_MATERIALS.map((material) => (
+                <TableRow key={material}>
+                  <TableCell>{material}</TableCell>
+                  <TableCell>{(packagingFees[material] * 1000).toFixed(0)}</TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
           <p className="text-sm mt-2">Примечание: В расчетах используются тарифы в £ за кг (тариф / 1000)</p>
@@ -121,21 +95,39 @@ export default function CalculatorPage() {
       const breakdown = currentRows.map(row => {
         const fee = calculateRowFee(row);
         const totalWeight = row.units * row.unit_weight_kg;
+        // fee_per_kg должен совпадать с логикой calculateRowFee (использовать ставки упаковки для стандартных материалов)
+        const cleanCode = String(row.material_code || '').replace(/^!/, '');
+        const feePerKg = (validPackagingMaterials.includes(cleanCode as any)
+          ? (packagingFees as any)[cleanCode]
+          : (feesMap[row.stream] as any)[cleanCode]) || 0;
         return { 
           ...row, 
           fee,
           total_weight_kg: totalWeight,
-          fee_per_kg: (feesMap[row.stream][row.material_code] || 0),
+          fee_per_kg: feePerKg,
           line_fee: fee,
           hwmc_fee: 0 // Пока 0, можно добавить логику
         };
+      });
+
+      // Отладочные логи по итогам расчёта
+      const packSum = breakdown.filter(r => r.stream === 'packaging').reduce((s, r) => s + (r.fee || 0), 0);
+      const weeeSum = breakdown.filter(r => r.stream === 'weee').reduce((s, r) => s + (r.fee || 0), 0);
+      const battSum = breakdown.filter(r => r.stream === 'batteries').reduce((s, r) => s + (r.fee || 0), 0);
+      console.log('[processRows] rows:', {
+        counts: {
+          packaging: breakdown.filter(r => r.stream === 'packaging').length,
+          weee: breakdown.filter(r => r.stream === 'weee').length,
+          batteries: breakdown.filter(r => r.stream === 'batteries').length,
+        },
+        totals: { packaging: packSum, weee: weeeSum, batteries: battSum },
       });
 
       // Генерация всех необходимых CSV файлов
       const parser = new Parser();
       
       // 1. breakdown.csv - основной отчет
-      const breakdownFields = ['country', 'stream', 'material_code', 'units', 'unit_weight_kg', 'total_weight_kg', 'fee_per_kg', 'line_fee', 'hwmc_fee'];
+      const breakdownFields = ['country', 'stream', 'material_code', 'material_comment', 'units', 'unit_weight_kg', 'total_weight_kg', 'fee_per_kg', 'line_fee', 'hwmc_fee'];
       const breakdownCsv = parser.parse(breakdown);
       
       // 2. organisation_details.csv - данные организации (пример)
@@ -250,7 +242,12 @@ export default function CalculatorPage() {
     
     let isValid = false;
     if (stream === 'packaging') {
-      isValid = validPackagingMaterials.some(m => m.toUpperCase() === editedMaterial.toUpperCase());
+      const validation = validatePackagingMaterial(editedMaterial);
+      isValid = validation.isValid;
+      if (!isValid) {
+        alert(validation.error);
+        return;
+      }
     } else if (stream === 'weee') {
       isValid = validWEEEMaterials.some(m => m.toUpperCase() === editedMaterial.toUpperCase());
     } else if (stream === 'batteries') {
