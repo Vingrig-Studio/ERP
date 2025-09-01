@@ -27,8 +27,13 @@ export default function ProfilePage() {
   });
 
   const onSubmit = async (data: Profile) => {
-    await updateProfile(data);
-    // TODO: обработка
+    try {
+      await updateProfile(data);
+      alert('Профиль сохранен успешно!');
+    } catch (error) {
+      console.error('Ошибка сохранения профиля:', error);
+      alert('Ошибка при сохранении профиля');
+    }
   };
 
   return (

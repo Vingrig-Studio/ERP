@@ -7,9 +7,9 @@ export function isMockMode(): boolean {
   return !apiKey || apiKey === 'dummy-api-key' || apiKey === 'your_shopify_api_key';
 }
 
-// Получение профиля организации из метаполей Shopify
+// Получение профиля организации (для статического сайта используем localStorage)
 export async function getProfile() {
-  if (isMockMode()) {
+  if (isMockMode() || typeof window === 'undefined') {
     console.log('Using mock profile data');
     // Возвращаем мок-данные для локальной разработки
     return {
@@ -26,63 +26,42 @@ export async function getProfile() {
   }
 
   try {
-    // Получаем текущий хост из window.location
-    const shop = typeof window !== 'undefined' ? new URL(window.location.href).searchParams.get('shop') : null;
-    
-    if (!shop) {
-      console.error('Shop parameter not found');
-      return null;
-    }
-
-    // Запрос к нашему API для получения метаполей
-    const response = await fetch(`/api/shopify/metafields?shop=${shop}`);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch profile: ${response.statusText}`);
+    // Для статического сайта используем localStorage
+    const savedProfile = localStorage.getItem('shopify_profile');
+    if (savedProfile) {
+      return JSON.parse(savedProfile);
     }
     
-    const data = await response.json();
-    return data.profile;
+    // Если профиль не найден, возвращаем значения по умолчанию
+    return {
+      companyType: 'limited',
+      isLargeProducer: false,
+      packagingSupplied: false,
+      registeredAddress: {
+        line1: '',
+        city: '',
+        postcode: '',
+        country: 'GB',
+      },
+    };
   } catch (error) {
     console.error('Error fetching profile:', error);
     return null;
   }
 }
 
-// Обновление профиля организации в метаполях Shopify
+// Обновление профиля организации (для статического сайта используем localStorage)
 export async function updateProfile(profile: any) {
-  if (isMockMode()) {
+  if (isMockMode() || typeof window === 'undefined') {
     console.log('Mock mode: profile would be saved to Shopify', profile);
     return { success: true };
   }
 
   try {
-    // Получаем текущий хост из window.location
-    const shop = typeof window !== 'undefined' ? new URL(window.location.href).searchParams.get('shop') : null;
-    
-    if (!shop) {
-      console.error('Shop parameter not found');
-      return { success: false, error: 'Shop parameter not found' };
-    }
-
-    // Запрос к нашему API для обновления метаполей
-    const response = await fetch('/api/shopify/metafields', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        shop,
-        profile,
-      }),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to update profile: ${response.statusText}`);
-    }
-    
-    const result = await response.json();
-    return result;
+    // Для статического сайта сохраняем в localStorage
+    localStorage.setItem('shopify_profile', JSON.stringify(profile));
+    console.log('Profile saved to localStorage:', profile);
+    return { success: true };
   } catch (error) {
     console.error('Error updating profile:', error);
     return { success: false, error: String(error) };

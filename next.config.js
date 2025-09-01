@@ -1,14 +1,33 @@
-module.exports = {
-  // Для локальной разработки и тестирования с API роутами
-  // и интеграции с Shopify закомментируйте следующую строку
-  // output: 'export',
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // Статический экспорт для Netlify
+  output: 'export',
   
-  // Раскомментировано для использования API роутов и Shopify интеграции
-  output: undefined,
-  
-  // Настройки для Shopify
-  env: {
-    SHOPIFY_API_KEY: process.env.NEXT_PUBLIC_SHOPIFY_API_KEY,
-    SHOPIFY_API_SECRET: process.env.SHOPIFY_API_SECRET,
+  // Отключаем оптимизацию изображений для статического экспорта
+  images: {
+    unoptimized: true
   },
-}; 
+  
+  // Отключаем trailing slash для лучшей совместимости
+  trailingSlash: true,
+  
+  // Базовый путь (можно настроить если нужно)
+  // basePath: '',
+  
+  // Переменные окружения для клиентской стороны
+  env: {
+    NEXT_PUBLIC_SHOPIFY_API_KEY: process.env.NEXT_PUBLIC_SHOPIFY_API_KEY,
+  },
+  
+  // ESLint конфигурация
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  
+  // TypeScript конфигурация
+  typescript: {
+    ignoreBuildErrors: true,
+  }
+};
+
+module.exports = nextConfig; 

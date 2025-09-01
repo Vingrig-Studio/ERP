@@ -1,0 +1,3 @@
+# Netlify redirects file
+# Обрабатываем все роуты как SPA
+/*    /index.html   200
