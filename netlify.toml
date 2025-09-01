@@ -4,11 +4,10 @@
   
   # Директория с готовыми статическими файлами
   publish = "out"
-  
-  # Node.js версия
-  environment = { NODE_VERSION = "18" }
 
 [build.environment]
+  # Node.js версия
+  NODE_VERSION = "18"
   # Переменные окружения для сборки
   NODE_ENV = "production"
   NEXT_TELEMETRY_DISABLED = "1"
@@ -18,7 +17,6 @@
   from = "/*"
   to = "/index.html"
   status = 200
-  conditions = {Role = ["admin"]}
 
 # Обработка статических файлов
 [[headers]]
@@ -27,29 +25,9 @@
     X-Frame-Options = "DENY"
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
 
 # Кеширование статических ресурсов
-[[headers]]
-  for = "/static/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
 [[headers]]
   for = "/_next/static/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
-# Настройки для форм (если понадобится в будущем)
-[functions]
-  node_bundler = "esbuild"
-
-# Переменные окружения по умолчанию
-[context.production.environment]
-  NEXT_PUBLIC_SHOPIFY_API_KEY = ""
-
-[context.deploy-preview.environment]
-  NEXT_PUBLIC_SHOPIFY_API_KEY = ""
-
-[context.branch-deploy.environment]
-  NEXT_PUBLIC_SHOPIFY_API_KEY = ""
