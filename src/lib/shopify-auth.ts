@@ -1,17 +1,17 @@
-// Функции для работы с Shopify API
+// Functions for working with Shopify API
 
-// Проверка, используем ли мы мок-режим
+// Check if we're using mock mode
 export function isMockMode(): boolean {
-  // Проверяем наличие реальных API ключей
+  // Check for presence of real API keys
   const apiKey = process.env.NEXT_PUBLIC_SHOPIFY_API_KEY;
   return !apiKey || apiKey === 'dummy-api-key' || apiKey === 'your_shopify_api_key';
 }
 
-// Получение профиля организации (для статического сайта используем localStorage)
+// Get organisation profile (for static site we use localStorage)
 export async function getProfile() {
   if (isMockMode() || typeof window === 'undefined') {
     console.log('Using mock profile data');
-    // Возвращаем мок-данные для локальной разработки
+    // Return mock data for local development
     return {
       companyType: 'limited',
       isLargeProducer: true,
@@ -26,13 +26,13 @@ export async function getProfile() {
   }
 
   try {
-    // Для статического сайта используем localStorage
+    // For static site we use localStorage
     const savedProfile = localStorage.getItem('shopify_profile');
     if (savedProfile) {
       return JSON.parse(savedProfile);
     }
     
-    // Если профиль не найден, возвращаем значения по умолчанию
+    // If profile not found, return default values
     return {
       companyType: 'limited',
       isLargeProducer: false,
@@ -50,7 +50,7 @@ export async function getProfile() {
   }
 }
 
-// Обновление профиля организации (для статического сайта используем localStorage)
+// Update organisation profile (for static site we use localStorage)
 export async function updateProfile(profile: any) {
   if (isMockMode() || typeof window === 'undefined') {
     console.log('Mock mode: profile would be saved to Shopify', profile);
@@ -58,7 +58,7 @@ export async function updateProfile(profile: any) {
   }
 
   try {
-    // Для статического сайта сохраняем в localStorage
+    // For static site we save to localStorage
     localStorage.setItem('shopify_profile', JSON.stringify(profile));
     console.log('Profile saved to localStorage:', profile);
     return { success: true };

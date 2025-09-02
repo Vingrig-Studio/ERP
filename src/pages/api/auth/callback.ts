@@ -1,20 +1,20 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
-// Обработчик OAuth callback от Shopify
+// OAuth callback handler from Shopify
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Получаем параметры запроса
+  // Get request parameters
   const { code, shop, state, hmac } = req.query;
 
-  // В реальном приложении здесь должна быть проверка HMAC для безопасности
-  // Пример: verifyHmac(req.query, process.env.SHOPIFY_API_SECRET);
+  // In a real application there should be HMAC verification for security
+  // Example: verifyHmac(req.query, process.env.SHOPIFY_API_SECRET);
 
   if (!code || !shop) {
     return res.status(400).json({ error: 'Missing required parameters' });
   }
 
   try {
-    // Обмен кода на постоянный токен доступа
-    // Пример:
+    // Exchange code for permanent access token
+    // Example:
     /*
     const response = await fetch(`https://${shop}/admin/oauth/access_token`, {
       method: 'POST',
@@ -30,12 +30,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const { access_token } = await response.json();
     
-    // Сохранение токена в базе данных или сессии
+    // Save token in database or session
     // saveAccessToken(shop, access_token);
     */
 
-    // Для примера просто перенаправляем на главную страницу приложения
-    // В реальном приложении нужно добавить параметр host для App Bridge
+    // For example just redirect to main application page
+    // In real application need to add host parameter for App Bridge
     const redirectUrl = `/`;
     
     return res.redirect(302, redirectUrl);

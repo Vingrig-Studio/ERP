@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// Стандартные материалы для упаковки
+// Standard packaging materials
 export const STANDARD_PACKAGING_MATERIALS = [
   "ALUMINIUM",
   "GLASS", 
@@ -10,7 +10,7 @@ export const STANDARD_PACKAGING_MATERIALS = [
   "WOOD"
 ] as const;
 
-// Определяем допустимые коды материалов для каждого потока
+// Define valid material codes for each stream
 export const validPackagingMaterials = STANDARD_PACKAGING_MATERIALS;
 
 export const validWEEEMaterials = [
@@ -27,32 +27,32 @@ import weeeFees from '../data/fees/weee.json';
 import batteriesFees from '../data/fees/batteries.json';
 import constants from '../data/fees/constants.json';
 
-// Функция для валидации материала упаковки
+// Function for validating packaging material
 export function validatePackagingMaterial(materialCode: string): { isValid: boolean; error?: string } {
   const upperCode = materialCode.replace(/^!/, '').toUpperCase();
   
   if (!STANDARD_PACKAGING_MATERIALS.includes(upperCode as any)) {
     return {
       isValid: false,
-      error: `Материал "${materialCode}" не является допустимым. Допустимые материалы: ${STANDARD_PACKAGING_MATERIALS.join(', ')}`
+      error: `Material "${materialCode}" is not valid. Valid materials: ${STANDARD_PACKAGING_MATERIALS.join(', ')}`
     };
   }
   
   return { isValid: true };
 }
 
-// Функция для нормализации кода материала
+// Function for normalising material code
 export function normalizeMaterialCode(stream: string, code: string): string {
-  // Убираем префикс '!' и приводим код к верхнему регистру для единообразия
+  // Remove '!' prefix and convert code to uppercase for consistency
   const cleaned = code.replace(/^!/, '');
   const upperCode = cleaned.toUpperCase();
   
-  // Проверяем и нормализуем коды для каждого потока
-  // 1) Если это один из стандартных упаковочных материалов — возвращаем его как есть, независимо от потока
+  // Check and normalise codes for each stream
+  // 1) If this is one of the standard packaging materials — return it as is, regardless of stream
   if (validPackagingMaterials.includes(upperCode as any)) {
     return Object.keys(packagingFees).find(k => k.toUpperCase() === upperCode) || upperCode;
   }
-  // 2) Иначе пробуем сопоставить по WEEE/батареям (на случай, если в будущем потребуется)
+  // 2) Otherwise try to match by WEEE/batteries (in case needed in future)
   if (stream === 'weee') {
     if (validWEEEMaterials.some(m => m.toUpperCase() === upperCode)) {
       return Object.keys(weeeFees).find(k => k.toUpperCase() === upperCode) || upperCode;
@@ -63,16 +63,16 @@ export function normalizeMaterialCode(stream: string, code: string): string {
     }
   }
   
-  // Если код не соответствует ни одному из допустимых, возвращаем исходный код
+  // If code doesn't match any of the valid ones, return original code
   return upperCode;
 }
 
-// Схема для строки CSV
+// Schema for CSV row
 export const RowSchema = z.object({
   country: z.string(),
   stream: z.enum(['packaging', 'weee', 'batteries']),
   material_code: z.string(),
-  // Необязательный комментарий к материалу, если была замена
+  // Optional comment for material if there was replacement
   material_comment: z.string().optional(),
   units: z.number().nonnegative(),
   unit_weight_kg: z.number().nonnegative(),
@@ -88,24 +88,24 @@ const feesMap: Record<string, Fees> = {
   batteries: batteriesFees,
 };
 
-export { feesMap }; // Экспортируем для использования в page.tsx
+export { feesMap }; // Export for use in page.tsx
 
 export function calculateRowFee(row: Row): number {
-  // Если материал помечен как заменённый, убираем восклицательный знак
+  // If material is marked as replaced, remove exclamation mark
   const cleanCode = row.material_code.replace(/^!/, '');
   const normalizedCode = normalizeMaterialCode(row.stream, cleanCode);
-  // Все ставки в JSON храним за кг (ставка за тонну / 1000)
-  // Если материал один из стандартных упаковочных — используем ставки упаковки для любого потока
+  // All rates in JSON stored per kg (rate per tonne / 1000)
+  // If material is one of standard packaging — use packaging rates for any stream
   const feePerKg = (validPackagingMaterials.includes(normalizedCode as any)
     ? (packagingFees as Fees)[normalizedCode]
     : (feesMap[row.stream] as Fees)[normalizedCode]) || 0;
   
   if (feePerKg === 0) {
-    console.warn(`Тариф не найден для материала: ${row.material_code} (поток: ${row.stream})`);
+    console.warn(`Rate not found for material: ${row.material_code} (stream: ${row.stream})`);
   }
   
-  // Формула: количество * вес_единицы(кг) * (ставка за тонну / 1000)
-  // Так как в данных ставка за кг, эквивалентно: units * unit_weight_kg * feePerKg
+  // Formula: quantity * unit_weight(kg) * (rate per tonne / 1000)
+  // Since data has rate per kg, equivalent to: units * unit_weight_kg * feePerKg
   const base = row.units * row.unit_weight_kg * feePerKg;
   
   return base;

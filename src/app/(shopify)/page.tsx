@@ -15,7 +15,7 @@ import weeeFees from '@/data/fees/weee.json';
 import batteriesFees from '@/data/fees/batteries.json';
 import { Input } from '@/components/ui/input';
 
-// Компонент для отображения тарифов
+// Component for displaying current rates
 function RatesInfo() {
   const [showRates, setShowRates] = useState(false);
   
@@ -23,17 +23,17 @@ function RatesInfo() {
     <div className="mt-4">
       <Button variant="outline" onClick={() => setShowRates(!showRates)} className="flex items-center">
         <Info className="mr-2 h-4 w-4" />
-        {showRates ? 'Скрыть тарифы' : 'Показать текущие тарифы'}
+        {showRates ? 'Hide Rates' : 'Show Current Rates'}
       </Button>
       
       {showRates && (
         <Card className="mt-2 p-4">
-          <h3 className="font-bold mb-2">Текущие тарифы (£ за тонну)</h3>
+          <h3 className="font-bold mb-2">Current Rates (£ per tonne)</h3>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Материал</TableHead>
-                <TableHead>Ставка (£/тонну)</TableHead>
+                <TableHead>Material</TableHead>
+                <TableHead>Rate (£/tonne)</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -45,7 +45,7 @@ function RatesInfo() {
               ))}
             </TableBody>
           </Table>
-          <p className="text-sm mt-2">Примечание: В расчетах используются тарифы в £ за кг (тариф / 1000)</p>
+          <p className="text-sm mt-2">Note: Calculations use rates in £ per kg (rate ÷ 1000)</p>
         </Card>
       )}
     </div>
@@ -70,7 +70,7 @@ export default function CalculatorPage() {
   const calculate = async () => {
     if (!file) return;
     setIsLoading(true);
-    setError(null); // Сбрасываем ошибку перед новым расчётом
+    setError(null); // Reset error before new calculation
     try {
       const parsedRows = await parseCSV(file);
       setRows(parsedRows);
@@ -79,23 +79,23 @@ export default function CalculatorPage() {
       console.error('Error in calculation:', error);
       setResult(null);
       if (error instanceof Error) {
-        setError(`Ошибка расчёта: ${error.message}`);
+        setError(`Calculation error: ${error.message}`);
       } else {
-        setError('Неизвестная ошибка при расчёте. Проверьте формат CSV файла.');
+        setError('Unknown calculation error. Please check your CSV file format.');
       }
     }
     setIsLoading(false);
   };
 
-  // Функция для обработки строк и расчета результата
+  // Function to process rows and calculate results
   const processRows = async (currentRows: any[]) => {
     try {
-      const profile = {}; // Mock profile для оффлайн
+      const profile = {}; // Mock profile for offline use
       const summary = calculateFees(currentRows, profile);
       const breakdown = currentRows.map(row => {
         const fee = calculateRowFee(row);
         const totalWeight = row.units * row.unit_weight_kg;
-        // fee_per_kg должен совпадать с логикой calculateRowFee (использовать ставки упаковки для стандартных материалов)
+        // fee_per_kg should match calculateRowFee logic (use packaging rates for standard materials)
         const cleanCode = String(row.material_code || '').replace(/^!/, '');
         const feePerKg = (validPackagingMaterials.includes(cleanCode as any)
           ? (packagingFees as any)[cleanCode]
@@ -106,11 +106,11 @@ export default function CalculatorPage() {
           total_weight_kg: totalWeight,
           fee_per_kg: feePerKg,
           line_fee: fee,
-          hwmc_fee: 0 // Пока 0, можно добавить логику
+          hwmc_fee: 0 // Currently 0, logic can be added later
         };
       });
 
-      // Отладочные логи по итогам расчёта
+      // Debug logs for calculation results
       const packSum = breakdown.filter(r => r.stream === 'packaging').reduce((s, r) => s + (r.fee || 0), 0);
       const weeeSum = breakdown.filter(r => r.stream === 'weee').reduce((s, r) => s + (r.fee || 0), 0);
       const battSum = breakdown.filter(r => r.stream === 'batteries').reduce((s, r) => s + (r.fee || 0), 0);
@@ -123,14 +123,14 @@ export default function CalculatorPage() {
         totals: { packaging: packSum, weee: weeeSum, batteries: battSum },
       });
 
-      // Генерация всех необходимых CSV файлов
+      // Generate all required CSV files
       const parser = new Parser();
       
-      // 1. breakdown.csv - основной отчет
+      // 1. breakdown.csv - main report
       const breakdownFields = ['country', 'stream', 'material_code', 'material_comment', 'units', 'unit_weight_kg', 'total_weight_kg', 'fee_per_kg', 'line_fee', 'hwmc_fee'];
       const breakdownCsv = parser.parse(breakdown);
       
-      // 2. organisation_details.csv - данные организации (пример)
+      // 2. organisation_details.csv - organisation data (example)
       const orgDetails = [{
         organisation_name: 'Example Company',
         organisation_type_code: 'LIMITED_COMPANY',
@@ -151,7 +151,7 @@ export default function CalculatorPage() {
       }];
       const orgDetailsCsv = parser.parse(orgDetails);
       
-      // 3. pepr_packaging.csv - данные по упаковке
+      // 3. pepr_packaging.csv - packaging data
       const packagingRows = breakdown
         .filter(row => row.stream === 'packaging')
         .map(row => ({
@@ -199,7 +199,7 @@ export default function CalculatorPage() {
       }];
       const partnerDetailsCsv = parser.parse(partnerDetails);
 
-      // Создаем ZIP архив со всеми файлами
+      // Create ZIP archive with all files
       const zip = new JSZip();
       zip.file('breakdown.csv', breakdownCsv);
       zip.file('organisation_details.csv', orgDetailsCsv);
@@ -221,22 +221,22 @@ export default function CalculatorPage() {
       console.error('Error in calculation:', error);
       setResult(null);
       if (error instanceof Error) {
-        setError(`Ошибка расчёта: ${error.message}`);
+        setError(`Calculation error: ${error.message}`);
       } else {
-        setError('Неизвестная ошибка при расчёте.');
+        setError('Unknown calculation error.');
       }
     }
   };
 
-  // Функция для начала редактирования материала
+  // Function to start editing material
   const startEditingMaterial = (index: number, material: string) => {
     setEditingRow(index);
     setEditedMaterial(material);
   };
 
-  // Функция для сохранения отредактированного материала
+  // Function to save edited material
   const saveEditedMaterial = async (index: number) => {
-    // Проверка на валидность материала для потока
+    // Check material validity for stream
     const row = rows[index];
     const stream = row.stream;
     
@@ -255,24 +255,24 @@ export default function CalculatorPage() {
     }
     
     if (!isValid) {
-      alert(`Материал "${editedMaterial}" не является допустимым для потока "${stream}"`);
+      alert(`Material "${editedMaterial}" is not valid for stream "${stream}"`);
       return;
     }
     
-    // Обновляем строку с новым материалом
+    // Update row with new material
     const updatedRows = [...rows];
     updatedRows[index] = { ...updatedRows[index], material_code: editedMaterial };
     setRows(updatedRows);
     
-    // Перерасчет с обновленными данными
+    // Recalculate with updated data
     await processRows(updatedRows);
     
-    // Сбрасываем состояние редактирования
+    // Reset editing state
     setEditingRow(null);
     setEditedMaterial('');
   };
 
-  // Функция для получения доступных материалов в зависимости от потока
+  // Function to get available materials depending on stream
   const getAvailableMaterials = (stream: string) => {
     if (stream === 'packaging') {
       return validPackagingMaterials;
@@ -296,7 +296,7 @@ export default function CalculatorPage() {
     <div className="p-4">
       <Dropzone onDrop={handleDrop} />
       <div className="mt-2">
-        {file && <p className="text-sm">Выбран файл: {file.name}</p>}
+        {file && <p className="text-sm">Selected file: {file.name}</p>}
       </div>
       <Button disabled={!file || isLoading} onClick={calculate} className="mt-2">
         {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Calculate Fees'}
@@ -308,7 +308,7 @@ export default function CalculatorPage() {
         <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
           <p>{error}</p>
           <p className="text-sm mt-2">
-            Убедитесь, что CSV файл содержит столбцы: country, stream (packaging/weee/batteries), 
+            Please ensure your CSV file contains columns: country, stream (packaging/weee/batteries), 
             material_code, units, unit_weight_kg
           </p>
         </div>
@@ -390,7 +390,7 @@ export default function CalculatorPage() {
                   <TableCell>{row.fee ? row.fee.toFixed(2) : '0.00'}</TableCell>
                   <TableCell>
                     {row.fee_per_kg === 0 && (
-                      <span className="text-red-500 text-xs">Тариф не найден</span>
+                      <span className="text-red-500 text-xs">Rate not found</span>
                     )}
                   </TableCell>
                 </TableRow>

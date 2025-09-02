@@ -3,7 +3,7 @@ import { getProfile, updateProfile } from '@/lib/shopify-auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req;
-  // TODO: получить shop из сессии
+  // TODO: get shop from session
   const shop = 'example';
 
   switch (method) {

@@ -18,10 +18,10 @@ export default function Layout({ children }: LayoutProps) {
 
   const apiKey = process.env.NEXT_PUBLIC_SHOPIFY_API_KEY || '';
   
-  // Проверяем, есть ли реальный API ключ (не dummy)
+  // Check if we have a real API key (not dummy)
   const isRealApiKey = apiKey && apiKey !== 'dummy-api-key';
   
-  // Получаем host из URL параметров (как это делает Shopify)
+  // Get host from URL parameters (as Shopify does)
   const getShopifyHost = () => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -31,35 +31,35 @@ export default function Layout({ children }: LayoutProps) {
     return 'dummy-host';
   };
 
-  // Конфигурация для App Bridge
+  // Configuration for App Bridge
   const config = {
     apiKey,
     host: mounted ? getShopifyHost() : 'dummy-host',
-    forceRedirect: isRealApiKey ? true : false, // Исправляю тип на boolean
+    forceRedirect: isRealApiKey ? true : false, // Fixing type to boolean
   };
 
   console.log('Using real Shopify API:', isRealApiKey);
   console.log('API Key:', apiKey);
   console.log('Host:', config.host);
 
-  // Рендерим только на клиенте
+  // Render only on client
   if (!mounted) {
     return <div>Loading...</div>;
   }
 
-  // Если нет реального API ключа, работаем в mock режиме
+  // If no real API key, work in mock mode
   if (!isRealApiKey) {
     console.log('Running in mock mode without Shopify App Bridge');
     return <>{children}</>;
   }
 
-  // Для mock mode не используем Provider, чтобы избежать ошибки invalid host
+  // For mock mode don't use Provider to avoid invalid host error
   if (isRealApiKey) {
     console.log('Mock mode: Skipping Shopify Provider');
     return <div>{children}</div>;
   }
 
-  // Для реальных ключей используем Provider
+  // For real keys use Provider
   return (
     <Provider config={config}>
       {children}

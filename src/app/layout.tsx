@@ -3,12 +3,12 @@ import './globals.css';
 
 export const metadata = {
   title: 'Pascalite UK Compliance Calculator',
-  description: 'Расчёт UK EPR для Shopify',
+  description: 'UK EPR calculation for Shopify',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ru">
+    <html lang="en-GB">
       <body>{children}</body>
     </html>
   );

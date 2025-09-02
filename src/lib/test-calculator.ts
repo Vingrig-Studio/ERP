@@ -4,7 +4,7 @@ import fs from 'fs/promises';
 import { validatePackagingMaterial, STANDARD_PACKAGING_MATERIALS } from './epr-calculator';
 
 async function testCalculator() {
-  // Тестовый CSV контент
+  // Test CSV content
   const testCsv = `
   country,stream,material_code,units,unit_weight_kg
   UK,packaging,Plastic,10,0.5
@@ -12,14 +12,14 @@ async function testCalculator() {
   UK,batteries,lithium,3,0.2
   `;
   
-  // Сохраняем в временный файл
+  // Save to temporary file
   await fs.writeFile('test.csv', testCsv.trim());
   
-  // Парсим
+  // Parse
   const file = { text: async () => testCsv } as any;
   const rows = await parseCSV(file);
   
-  // Расчёт
+  // Calculate
   const profile = {};
   const result = calculateFees(rows, profile);
   
@@ -28,19 +28,19 @@ async function testCalculator() {
 
 testCalculator().catch(console.error); 
 
-// Тестируем валидацию материалов
+// Test material validation
 export function testMaterialValidation() {
-  console.log('=== Тестирование валидации материалов ===');
+  console.log('=== Testing Material Validation ===');
   
-  // Тестируем правильные материалы
-  console.log('\nПравильные материалы:');
+  // Test valid materials
+  console.log('\nValid materials:');
   STANDARD_PACKAGING_MATERIALS.forEach(material => {
     const result = validatePackagingMaterial(material);
     console.log(`${material}: ${result.isValid ? '✅' : '❌'} ${result.error || ''}`);
   });
   
-  // Тестируем неправильные материалы
-  console.log('\nНеправильные материалы:');
+  // Test invalid materials
+  console.log('\nInvalid materials:');
   const invalidMaterials = [
     'Aluminium', // неправильный регистр
     'GLASS', // правильный
@@ -60,7 +60,7 @@ export function testMaterialValidation() {
   });
 }
 
-// Запускаем тест если файл выполняется напрямую
+// Run test if file is executed directly
 if (typeof window === 'undefined') {
   testMaterialValidation();
 } 

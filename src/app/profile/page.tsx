@@ -8,11 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { updateProfile } from '@/lib/shopify-auth';
 
-// Схема для профиля
+// Schema for profile
 const profileSchema = z.object({
   companyType: z.enum(['limited', 'sole_trader']),
   isLargeProducer: z.boolean(),
-  // ... другие поля
+  // ... other fields
 });
 
 type Profile = z.infer<typeof profileSchema>;
@@ -29,10 +29,10 @@ export default function ProfilePage() {
   const onSubmit = async (data: Profile) => {
     try {
       await updateProfile(data);
-      alert('Профиль сохранен успешно!');
+      alert('Profile saved successfully!');
     } catch (error) {
-      console.error('Ошибка сохранения профиля:', error);
-      alert('Ошибка при сохранении профиля');
+      console.error('Error saving profile:', error);
+      alert('Error saving profile');
     }
   };
 
@@ -52,7 +52,7 @@ export default function ProfilePage() {
             </FormItem>
           )}
         />
-        {/* Другие поля */}
+        {/* Other fields */}
         <Button type="submit">Save Profile</Button>
       </form>
     </Form>

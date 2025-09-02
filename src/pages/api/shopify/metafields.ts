@@ -1,17 +1,17 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
-// Функция для проверки подлинности запроса от Shopify
+// Function to verify authenticity of request from Shopify
 function verifyShopifyRequest(req: NextApiRequest) {
-  // В реальном приложении здесь должна быть проверка HMAC или другой способ аутентификации
-  // Для примера просто проверяем наличие shop параметра
+  // In real application there should be HMAC or other authentication method
+  // For example just check presence of shop parameter
   return !!req.query.shop || (req.body && req.body.shop);
 }
 
-// Функция для получения метаполей магазина
+// Function to get shop metafields
 async function getShopifyMetafields(shop: string) {
   try {
-    // Здесь должен быть реальный запрос к Shopify GraphQL API
-    // Пример запроса:
+    // Here should be real request to Shopify GraphQL API
+    // Example request:
     /*
     const response = await fetch(`https://${shop}/admin/api/2023-07/graphql.json`, {
       method: 'POST',
@@ -39,7 +39,7 @@ async function getShopifyMetafields(shop: string) {
     const data = await response.json();
     */
     
-    // Для примера возвращаем заглушку
+    // For example return stub
     return {
       profile: {
         companyType: 'limited',
@@ -59,11 +59,11 @@ async function getShopifyMetafields(shop: string) {
   }
 }
 
-// Функция для обновления метаполей магазина
+// Function to update shop metafields
 async function updateShopifyMetafields(shop: string, profile: any) {
   try {
-    // Здесь должен быть реальный запрос к Shopify GraphQL API
-    // Пример запроса:
+    // Here should be real request to Shopify GraphQL API
+    // Example request:
     /*
     const response = await fetch(`https://${shop}/admin/api/2023-07/graphql.json`, {
       method: 'POST',
@@ -87,7 +87,7 @@ async function updateShopifyMetafields(shop: string, profile: any) {
     const data = await response.json();
     */
     
-    // Для примера возвращаем успешный результат
+    // For example return successful result
     return { success: true };
   } catch (error) {
     console.error('Error updating Shopify metafields:', error);
@@ -96,7 +96,7 @@ async function updateShopifyMetafields(shop: string, profile: any) {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Проверяем аутентификацию запроса
+  // Check request authentication
   if (!verifyShopifyRequest(req)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
