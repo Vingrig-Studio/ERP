@@ -316,8 +316,13 @@ export default function CalculatorPage() {
       
       {result && (
         <Card className="mt-4">
-          <h2>Grand Total: £{result.summary.grandTotal.toFixed(2)}</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="flex justify-between items-center mb-4">
+            <h2>Grand Total: £{result.summary.grandTotal.toFixed(2)}</h2>
+            <Button onClick={downloadZIP} className="bg-green-600 hover:bg-green-700">
+              📥 Download Compliance Bundle
+            </Button>
+          </div>
+          <div className="grid grid-cols-3 gap-4 mb-4">
             <Card>
               <Package />
               <h3>Packaging</h3>
@@ -397,7 +402,6 @@ export default function CalculatorPage() {
               ))}
             </TableBody>
           </Table>
-          <Button onClick={downloadZIP}>Download Compliance Bundle</Button>
         </Card>
       )}
     </div>
